@@ -19,6 +19,7 @@ RUN apt-get update && \
         automake \
         gcc \
         g++ \
+        libmaxminddb-dev \
         make && \
     rm -rf /var/cache/apt
 
@@ -44,10 +45,17 @@ RUN NGINX_ARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
     ./configure --with-compat --with-http_dav_module --add-dynamic-module=/src ${NGINX_ARGS} && \
     make modules
 
+RUN wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.1.1.tar.gz && \
+    tar -C /usr/local -xzvf v3.1.1.tar.gz
 
 FROM nginx:${NGINX_VERSION}
+
+RUN apt-get update && \
+    apt-get install -y libmaxminddb0 && \
+    rm -rf /var/cache/apt
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY main.conf modsecurity.conf unicode.mapping /etc/nginx/modsec/
 COPY --from=build /usr/src/nginx-${NGINX_VERSION}/objs/ngx_http_modsecurity_module.so /usr/lib/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
+COPY --from=build /usr/local/owasp-modsecurity-crs-3.1.1 /usr/local/owasp-modsecurity-crs-3.1.1
