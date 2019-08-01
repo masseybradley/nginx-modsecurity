@@ -59,3 +59,7 @@ COPY main.conf modsecurity.conf unicode.mapping /etc/nginx/modsec/
 COPY --from=build /usr/src/nginx-${NGINX_VERSION}/objs/ngx_http_modsecurity_module.so /usr/lib/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
 COPY --from=build /usr/local/owasp-modsecurity-crs-3.1.1 /usr/local/owasp-modsecurity-crs-3.1.1
+
+RUN mv /usr/local/owasp-modsecurity-crs-3.1.1/crs-setup.conf.example /usr/local/owasp-modsecurity-crs-3.1.1/crs-setup.conf && \
+    mv /usr/local/owasp-modsecurity-crs-3.1.1/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /usr/local/owasp-modsecurity-crs-3.1.1/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf && \
+    mv /usr/local/owasp-modsecurity-crs-3.1.1/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example /usr/local/owasp-modsecurity-crs-3.1.1/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
