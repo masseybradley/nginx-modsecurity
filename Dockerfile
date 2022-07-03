@@ -1,12 +1,15 @@
 # syntax=docker/dockerfile:experimental
 ARG NGINX_VERSION
-FROM nginx:${NGINX_VERSION:-"1.19.2"} as build
+FROM nginx:${NGINX_VERSION:-"1.23.0"} as build
 
 ARG MODSECURITY_VERSION
-ENV MODSECURITY_VERSION=${MODSECURITY_VERSION:-"3.0.4"}
+ENV MODSECURITY_VERSION=${MODSECURITY_VERSION:-"3.0.7"}
+
+ARG MODSECURITY_NGINX_VERSION
+ENV MODSECURITY_NGINX_VERSION=${MODSECURITY_NGINX_VERSION:-"1.0.3"}
 
 ARG OWASP_CRS_VERSION
-ENV OWASP_CRS_VERSION=${OWASP_CRS_VERSION:-"3.2.0"}
+ENV OWASP_CRS_VERSION=${OWASP_CRS_VERSION:-"3.3.2"}
 
 RUN apt-get update && \
     apt-get install -y \
@@ -44,20 +47,20 @@ RUN --mount=type=ssh git clone --depth 1 -b v${MODSECURITY_VERSION} --single-bra
     make install && \
     rm -rf /src
 
-RUN --mount=type=ssh git clone -b v1.0.1 --depth 1 git@github.com:SpiderLabs/ModSecurity-nginx.git /src
+RUN --mount=type=ssh git clone -b v${MODSECURITY_NGINX_VERSION} --depth 1 git@github.com:SpiderLabs/ModSecurity-nginx.git /src
 
 WORKDIR /usr/src/nginx-${NGINX_VERSION}
 RUN NGINX_ARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
     ./configure --with-compat --with-http_dav_module --add-dynamic-module=/src ${NGINX_ARGS} && \
     make modules
 
-RUN wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v${OWASP_CRS_VERSION}.tar.gz && \
+RUN wget https://github.com/coreruleset/coreruleset/archive/v${OWASP_CRS_VERSION}.tar.gz && \
     tar -C /usr/local -xzvf v${OWASP_CRS_VERSION}.tar.gz
 
-FROM nginx:${NGINX_VERSION:-"1.19.2"}
+FROM nginx:${NGINX_VERSION:-"1.23.0"}
 
 ARG OWASP_CRS_VERSION
-ENV OWASP_CRS_VERSION=${OWASP_CRS_VERSION:-"3.2.0"}
+ENV OWASP_CRS_VERSION=${OWASP_CRS_VERSION:-"3.3.2"}
 
 RUN apt-get update && \
     apt-get install -y libmaxminddb0 && \
@@ -68,8 +71,8 @@ COPY main.conf modsecurity.conf unicode.mapping /etc/nginx/modsec/
 RUN sed -i "s/_OWASP_CRS_VERSION_/${OWASP_CRS_VERSION}/g" /etc/nginx/modsec/main.conf
 COPY --from=build /usr/src/nginx-${NGINX_VERSION}/objs/ngx_http_modsecurity_module.so /usr/lib/nginx/modules/ngx_http_modsecurity_module.so
 COPY --from=build /usr/local/modsecurity/ /usr/local/modsecurity/
-COPY --from=build /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION} /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}
+COPY --from=build /usr/local/coreruleset-${OWASP_CRS_VERSION} /usr/local/coreruleset-${OWASP_CRS_VERSION}
 
-RUN mv /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/crs-setup.conf.example /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/crs-setup.conf && \
-    mv /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf && \
-    mv /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example /usr/local/owasp-modsecurity-crs-${OWASP_CRS_VERSION}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+RUN mv /usr/local/coreruleset-${OWASP_CRS_VERSION}/crs-setup.conf.example /usr/local/coreruleset-${OWASP_CRS_VERSION}/crs-setup.conf && \
+    mv /usr/local/coreruleset-${OWASP_CRS_VERSION}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /usr/local/coreruleset-${OWASP_CRS_VERSION}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf && \
+    mv /usr/local/coreruleset-${OWASP_CRS_VERSION}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example /usr/local/coreruleset-${OWASP_CRS_VERSION}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
