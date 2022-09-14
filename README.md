@@ -1,17 +1,15 @@
-# nginx-modsecurity
+# openresty-modsecurity
 
-Official Docker Hub [nginx](https://hub.docker.com/_/nginx/ "nginx") image extended with [Modsecurity](https://github.com/SpiderLabs/ModSecurity "Modsecurity") and [Modsecurity-nginx](https://github.com/SpiderLabs/ModSecurity-nginx "Modsecurity-nginx").
+[OpenResty official docker image] extended with [Modsecurity] and [Modsecurity-nginx] configured with the [coreruleset].
 
-Build the image:
-```
-export NGINX_VERSION=1.17.1
-docker build --rm \
-    --pull \
-    --ssh=default \
-    -f Dockerfile \
-    --build-arg NGINX_VERSION=${NGINX_VERSION:-latest} \
-    -t localhost/nginx/modsecurity:${NGINX_VERSION:-latest} \
-    . || {
-        printf "failed to build modsecurity image.\n"
-    }
-```
+## Development
+
+Build the docker image: `docker buildx build --ssh=default --rm -t openresty .`
+
+Run a container: `docker run --rm -p 8000:8000 openresty`
+
+
+[OpenResty official docker image]: https://hub.docker.com/r/openresty/openresty
+[Modsecurity]: https://github.com/SpiderLabs/ModSecurity
+[Modsecurity-nginx]: https://github.com/SpiderLabs/ModSecurity-nginx
+[coreruleset]: https://github.com/coreruleset/coreruleset
