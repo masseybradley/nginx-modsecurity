@@ -17,8 +17,8 @@ services:
     volumes:
     - './www/var/www/app/app:/var/www/app'
     working_dir: '/var/www/app'
-    ports:
-    - '3000:3000'
+    expose:
+    - '3000'
     entrypoint: ['yarn']
     command: ['start']
     stdin_open: true
