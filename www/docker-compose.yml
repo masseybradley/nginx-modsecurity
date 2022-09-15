@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    image: 'node:14-alpine'
+    restart: 'always'
+    depends_on:
+    - 'api'
+    user: 'node'
+    volumes:
+    - '${PWD}/var/www/app/app:/var/www/app'
+    working_dir: '/var/www/app'
+    ports:
+    - '3000:3000'
+    entrypoint: ['yarn']
+    command: ['start']
+    stdin_open: true
+  api:
+    image: 'api'
+    build: 'var/www/api'
+    restart: 'always'
+    expose:
+    - '8000'
+    entrypoint: ['python3']
+    command: ['./manage.py', 'runserver_plus', '0.0.0.0:8000']
+    stdin_open: true
+    environment:
+    - 'PYTHONUNBUFFERED=1'
+    volumes:
+    - '/var/www/api/www:/var/www'

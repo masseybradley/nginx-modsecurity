@@ -1,0 +1,16 @@
+version: '3'
+services:
+  openresty:
+    image: 'openresty'
+    depends_on:
+    - 'myapp'
+    ports:
+    - '8000:8000'
+    volumes:
+    - './etc/nginx/conf.d:/etc/nginx/conf.d'
+  myapp:
+    image: 'myapp'
+    build: 
+      context: 'www'
+    expose:
+    - '8000'
