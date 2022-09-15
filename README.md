@@ -24,6 +24,22 @@ docker run --rm -it --entrypoint npm -v ${PWD}/www/var/www/app/app:/var/www/app 
 Django Graphene backend application.
 
 
+### keycloak
+
+Create credentials:
+```
+echo "KEYCLOAK_PASSWORD=$(openssl rand -base64 32) > .env"
+echo "POSTGRES_PASSWORD=$(openssl rand -base64 32) >> .env"
+```
+
+Connect to the `jboss-cli.sh` GUI:
+```
+docker cp keycloak:/opt/jboss/ /opt/jboss
+docker exec -it keycloak /opt/jboss/keycloak/bin/add-user.sh user password
+/opt/jboss/keycloak/bin/jboss-cli.sh --gui --connect --user=user --password=password
+```
+
+
 [OpenResty official docker image]: https://hub.docker.com/r/openresty/openresty
 [Modsecurity]: https://github.com/SpiderLabs/ModSecurity
 [Modsecurity-nginx]: https://github.com/SpiderLabs/ModSecurity-nginx

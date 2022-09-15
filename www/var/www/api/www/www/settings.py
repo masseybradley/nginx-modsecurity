@@ -24,7 +24,11 @@ SECRET_KEY = 'rb1f(&%h))m84m##63-4l$e7*yqlk&i2pqpxh!nt88xgx&*t3i'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    'api',
+]
 
 
 # Application definition
@@ -38,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
     'graphene_django',
     'app'
 ]
@@ -51,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middleware.SessionRefresh',
 ]
 
 ROOT_URLCONF = 'www.urls'
@@ -127,7 +134,46 @@ GRAPHENE = {
     'SCHEMA': 'app.graphql.schema'
 }
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = (
-       'http://localhost:3000',
-)
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:80',
+    'http://localhost',
+]
+
+# # Django REST Framework configuration
+# # https://www.django-rest-framework.org/#installation
+# 
+# REST_FRAMEWORK = {
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+#     'PAGE_SIZE': 10,
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'mozilla_django_oidc.contrib.drf.OIDCAuthentication',
+#     ),
+# }
+# 
+# 
+# # Mozilla Django OIDC configuration
+# # https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html
+# 
+# AUTHENTICATION_BACKENDS = (
+#     'app.auth.OIDCAuthenticationBackend',
+# )
+# 
+# OIDC_RP_SIGN_ALGO = "RS256"
+# OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+# OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+# OIDC_OP_AUTHORIZATION_ENDPOINT = "http://keycloak/auth/realms/yields/protocol/openid-connect/auth"
+# OIDC_OP_TOKEN_ENDPOINT = "http://keycloak/auth/realms/yields/protocol/openid-connect/token"
+# OIDC_OP_USER_ENDPOINT = "http://keycloak/auth/realms/yields/protocol/openid-connect/userinfo"
+# OIDC_OP_JWKS_ENDPOINT = "http://keycloak/auth/realms/yields/protocol/openid-connect/certs"
+# OIDC_OP_LOGOUT_ENDPOINT = "http://keycloak/auth/realms/yields/protocol/openid-connect/logout"
+# OIDC_STORE_ACCESS_TOKEN=True
+# 
+# OIDC_USERNAME_ALGO='app.utils.generate_username'
+# 
+# OIDC_CALLBACK_CLASS = 'app.views.OIDCAuthenticationCallbackView'
+# 
+# LOGIN_URL = 'oidc_authentication_init'
+# LOGIN_REDIRECT_URL= "/"
+# LOGOUT_REDIRECT_URL="/"

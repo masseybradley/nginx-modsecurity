@@ -12,9 +12,9 @@ const client = new ApolloClient({
 
 const ALL_IP_ADDRESSES_QUERY = gql`
 query {
-  allIPAddresses {
+  allIpAddresses {
     id
-    ip_address 
+    ipAddress
   }
 }
 `;
@@ -23,18 +23,24 @@ const IPAddressListing = () => {
   const useQueryResult = useQuery(ALL_IP_ADDRESSES_QUERY, {variables: {offset: 0, limit: 20}})
   if (useQueryResult.loading) return 'loading...'
   if (useQueryResult.error) return 'failed loading all IP addresses.'
-  const allIPAddresses = useQueryResult.data.allIPAddresses;
+  const allIpAddresses = useQueryResult.data.allIpAddresses;
   return <div>
       <ul>
-      {allIPAddresses.map((ip) => {
+      {allIpAddresses.map((ip) => {
         return (
           <div>
-            <li key={ip.id}>{ip.ip_address}</li>
+            <li key={ip.id}>{ip.ipAddress}</li>
           </div>
         )
       })}
     </ul>
   </div>
+}
+
+
+function Welcome(props) {
+    console.log(props)
+    return <h1>Hello, {props.name}</h1>
 }
 
 // <Doughnut ref={coin.sno} data={coin.name} />
@@ -86,6 +92,7 @@ function App() {
   return (
     <div className="App">
       <ApolloProvider client={client}>
+        <Welcome name="bob"/>
         <IPAddressListing/>
       </ApolloProvider>
     </div>
