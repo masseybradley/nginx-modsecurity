@@ -68,6 +68,8 @@ RUN curl -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
         ${NGINX_ARGS} && \
     make -j2 && \
     make install
+         
+# --with-http_mirror_module \
 
 RUN wget https://github.com/coreruleset/coreruleset/archive/v${OWASP_CRS_VERSION}.tar.gz && \
     tar -C /usr/local -xzvf v${OWASP_CRS_VERSION}.tar.gz

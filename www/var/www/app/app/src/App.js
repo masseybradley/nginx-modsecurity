@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 import ApolloClient from 'apollo-boost';
@@ -43,57 +43,68 @@ function Welcome(props) {
     return <h1>Hello, {props.name}</h1>
 }
 
-// <Doughnut ref={coin.sno} data={coin.name} />
-// const Coins = (onCoinSelected) => {
-//   const { loading, error, data } = useQuery(ALL_COINS_QUERY);
-// 
-//   if (loading) return 'Loading...';
-//   if (error) return `Error! ${error.message}`;
-// 
-//   return (
-//     <select name="coin" onChange={onCoinSelected}>
-//       {data.coins.map(coin => (
-//         <option key={coin.id} value={coin.name}>
-//           {coin.name}
-//         </option>
-//       ))}
-//     </select>
-//   );
-// }
+const CreateIPAddressForm = () => {
+  const [ipAddress, setIpAddress] = useState('')
+  const [createIpAddress, { loading, error }] = useMutation(gql`
+    mutation CreateIPAddressMutation ( $ipAddress: String! ) {
+      createIpAddress( ipAddress: $ipAddress ) {
+        ipAddress
+      }
+    }
+  `, {
+    refetchQueries: [
+      { query: ALL_IP_ADDRESSES_QUERY },
+    ]
+  })
+  if (loading) return 'loading.....'
+  if (error) return 'error'
+  return (
+    <>
+      <input type="text" value={ipAddress} onChange={e => setIpAddress(e.target.value)}/>
+      <button onClick={() => {
+        createIpAddress({variables:{ ipAddress: ipAddress }})
+      }}>Submit</button>
+    </>
+  )
+}
 
-// const CreateExampeForm = () => {
-//   const [name, setName] = useState('')
-//   const [createExample, { loading, error }] = useMutation(gql`
-//     mutation CreateExampleMutation ( $name: String! ) {
-//       createExample( name: $name ) {
-//         id
-//         name
-//       }
-//     }
-//   `, {
-//     refetchQueries: [
-//       { query: ALL_EXAMPLES_QUERY },
-//     ]
-//   })
-//   if (loading) return 'loading.....'
-//   if (error) return 'error'
-//   return (
-//     <>
-//       <input type="text" value={name} onChange={e => setName(e.target.value)}/>
-//       <button onClick={() => {
-//         createExample({variables:{ name: name }})
-//       }}>Submit</button>
-//     </>
-//   )
-// }
+function IPCallback() {
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [items, setItems] = useState([]);
 
+  useEffect(() => {
+    fetch("https://geolocation-db.com/json/")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setItems(result);
+          console.log(result);
+        },
+        (error) => {
+          setIsLoaded(true);
+          setError(error);
+        }
+      )
+  }, [])
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  } else if (!isLoaded) {
+    return <div>Loading...</div>;
+  } else {
+    return <div>OK</div>;
+  }
+}
 
 function App() {
   return (
     <div className="App">
       <ApolloProvider client={client}>
+        <IPCallback/>
         <Welcome name="bob"/>
         <IPAddressListing/>
+        <CreateIPAddressForm/>
       </ApolloProvider>
     </div>
   );
