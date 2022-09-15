@@ -3,14 +3,35 @@ services:
   openresty:
     image: 'openresty'
     depends_on:
-    - 'myapp'
+    - 'app'
     ports:
     - '8000:8000'
     volumes:
-    - './etc/nginx/conf.d:/etc/nginx/conf.d'
-  myapp:
-    image: 'myapp'
-    build: 
-      context: 'www'
+    - './www/etc/nginx/conf.d:/etc/nginx/conf.d:ro'
+  app:
+    image: 'node:14-alpine'
+    restart: 'always'
+    depends_on:
+    - 'api'
+    user: 'node'
+    volumes:
+    - './www/var/www/app/app:/var/www/app'
+    working_dir: '/var/www/app'
+    ports:
+    - '3000:3000'
+    entrypoint: ['yarn']
+    command: ['start']
+    stdin_open: true
+  api:
+    image: 'api'
+    build: './www/var/www/api'
+    restart: 'always'
     expose:
     - '8000'
+    entrypoint: ['python3']
+    command: ['./manage.py', 'runserver_plus', '0.0.0.0:8000']
+    stdin_open: true
+    environment:
+    - 'PYTHONUNBUFFERED=1'
+    volumes:
+    - './www/var/www/api/www:/var/www'
