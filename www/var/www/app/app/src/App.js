@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'
 import './App.css';
 
 import ApolloClient from 'apollo-boost';
@@ -14,97 +15,73 @@ const ALL_IP_ADDRESSES_QUERY = gql`
 query {
   allIpAddresses {
     id
-    ipAddress
+    ipv4
+    longitude
+    latitude
   }
 }
 `;
 
-const IPAddressListing = () => {
-  const useQueryResult = useQuery(ALL_IP_ADDRESSES_QUERY, {variables: {offset: 0, limit: 20}})
-  if (useQueryResult.loading) return 'loading...'
-  if (useQueryResult.error) return 'failed loading all IP addresses.'
+const CREATE_IP_ADDRESS_MUTATION = gql`
+mutation CreateIPAddressMutation ( $ipv4: String!, $longitude: String!, $latitude: String! ) {
+  createIpAddress( ipv4: $ipv4, longitude: $longitude, latitude: $latitude ) {
+    ipv4
+    longitude
+    latitude
+  }
+}
+`;
+
+function IPAddressListing() {
+  const useQueryResult = useQuery(ALL_IP_ADDRESSES_QUERY, { variables: { offset: 0, limit: 20 } });
+  if (useQueryResult.loading)
+    return 'loading...';
+  if (useQueryResult.error)
+    return 'failed loading all IP addresses.';
   const allIpAddresses = useQueryResult.data.allIpAddresses;
   return <div>
-      <ul>
+    <ul>
       {allIpAddresses.map((ip) => {
         return (
           <div>
-            <li key={ip.id}>{ip.ipAddress}</li>
+            <li key={ip.id}>IP: {ip.ipv4} ({ip.longitude}, {ip.latitude})</li>
           </div>
-        )
+        );
       })}
     </ul>
-  </div>
+  </div>;
 }
 
 
-function Welcome(props) {
-    console.log(props)
-    return <h1>Hello, {props.name}</h1>
-}
-
-const CreateIPAddressForm = () => {
-  const [ipAddress, setIpAddress] = useState('')
-  const [createIpAddress, { loading, error }] = useMutation(gql`
-    mutation CreateIPAddressMutation ( $ipAddress: String! ) {
-      createIpAddress( ipAddress: $ipAddress ) {
-        ipAddress
-      }
-    }
-  `, {
-    refetchQueries: [
-      { query: ALL_IP_ADDRESSES_QUERY },
-    ]
-  })
-  if (loading) return 'loading.....'
-  if (error) return 'error'
-  return (
-    <>
-      <input type="text" value={ipAddress} onChange={e => setIpAddress(e.target.value)}/>
-      <button onClick={() => {
-        createIpAddress({variables:{ ipAddress: ipAddress }})
-      }}>Submit</button>
-    </>
-  )
-}
-
-function IPCallback() {
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [items, setItems] = useState([]);
-
-  useEffect(() => {
-    fetch("https://geolocation-db.com/json/")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setItems(result);
-          console.log(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      )
-  }, [])
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  } else if (!isLoaded) {
-    return <div>Loading...</div>;
-  } else {
-    return <div>OK</div>;
-  }
+function IPCallback(props) {
+  const [createIpAddress, { loading, error }] = useMutation(CREATE_IP_ADDRESS_MUTATION)
+  createIpAddress({variables: {ipv4: props.ipv4, longitude: props.longitude, latitude: props.latitude}})
 }
 
 function App() {
+  const [ipv4, setIPv4] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [latitude, setLatitude] = useState('');
+
+  const getData = async () => {
+    const res = await axios.get('https://geolocation-db.com/json/')
+    console.log(res.data);
+    setIPv4(res.data.IPv4)
+    setLongitude(res.data.longitude)
+    setLatitude(res.data.latitude)
+  }
+
+  useEffect( () => {
+    getData()
+  }, [])
+
   return (
     <div className="App">
+      <h2>Your IP Address is</h2>
+      <h4>{ipv4}</h4>
       <ApolloProvider client={client}>
-        <IPCallback/>
-        <Welcome name="bob"/>
+        <IPCallback ipv4={ipv4} longitude={longitude} latitude={latitude}/>
         <IPAddressListing/>
-        <CreateIPAddressForm/>
       </ApolloProvider>
     </div>
   );

@@ -19,11 +19,15 @@ class Query(graphene.ObjectType):
 
 class CreateIPAddressMutation(graphene.Mutation):
     class Arguments:
-        ip_address = graphene.String()
+        ipv4 = graphene.String()
+        longitude = graphene.String()
+        latitude = graphene.String()
     Output = IPAddressType
     def mutate(root, info, **kwargs):
-        ip_address = kwargs["ip_address"]
-        obj, created = IPAddress.objects.get_or_create(ip_address=ip_address)
+        ipv4 = kwargs["ipv4"]
+        longitude = kwargs["longitude"]
+        latitude = kwargs["latitude"]
+        obj, created = IPAddress.objects.get_or_create(ipv4=ipv4, longitude=longitude, latitude=latitude)
         return obj
 
 
